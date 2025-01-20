@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using System;
 
-namespace AvaloniaConsole
+namespace AvaloniaTerminal
 {
     internal class Program
     {
