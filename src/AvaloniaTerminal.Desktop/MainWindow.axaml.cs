@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using CliWrap;
-using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -17,7 +16,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        tc.UserInput = Input;
+        //tc.UserInput = Input;
 
         var result = Cli.Wrap("cmd")
         .WithStandardOutputPipe(PipeTarget.ToStream(_outputStream))
@@ -26,7 +25,8 @@ public partial class MainWindow : Window
 
         result.GetAwaiter();
 
-        _ = Task.Run(async () => {
+        _ = Task.Run(async () =>
+        {
 
             byte[] buffer = new byte[2048];
             int bytesRead = 0;
