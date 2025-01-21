@@ -186,10 +186,14 @@ public class TerminalControl : Control, ITerminalDelegate
 
         var typeface = new Typeface(FontName);
 
-        var formattedText = new FormattedText(ConsoleText, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, 12, brush);
+        string[] array = ConsoleText.Split("\n");
 
-        var point1 = GetPoint(0, 0);
-        drawingContext.DrawText(formattedText, point1);
+        for (int i = 0; i < array.Length; i++)
+        {
+            string line = array[i];
+            var point1 = GetPoint(i, 0);
+            drawingContext.DrawText(new FormattedText(line, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, FontSize, brush), point1);
+        }
     }
 
     private Avalonia.Point GetPoint(int row, int column)
@@ -211,6 +215,7 @@ public class TerminalControl : Control, ITerminalDelegate
         var typeface = new Typeface(myFont);
         var shaped = TextShaper.Current.ShapeText("a", new TextShaperOptions(typeface.GlyphTypeface, FontSize));
         var run = new ShapedTextRun(shaped, new GenericTextRunProperties(typeface, FontSize));
+        _textSize = run.Size;
 
         return run.Size;
     }
@@ -249,7 +254,8 @@ public class TerminalControl : Control, ITerminalDelegate
 
     public void Send(byte[] data)
     {
-        throw new NotImplementedException();
+        //EnsureCaretIsVisible();
+        UserInput?.Invoke(data);
     }
 
     public string? WindowCommand(Terminal source, WindowManipulationCommand command, params int[] args)
