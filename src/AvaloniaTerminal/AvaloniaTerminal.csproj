@@ -13,4 +13,10 @@
   <ItemGroup>
     <ProjectReference Include="..\XtermSharp\XtermSharp.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="TerminalControl.axaml.cs">
+      <DependentUpon>TerminalControl.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

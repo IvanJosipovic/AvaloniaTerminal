@@ -17,7 +17,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        //tc.UserInput = Input;
+        tc.UserInput = Input;
 
         var result = Cli.Wrap("cmd")
         .WithStandardOutputPipe(PipeTarget.ToStream(_outputStream))

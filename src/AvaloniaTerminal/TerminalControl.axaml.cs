@@ -1,16 +1,17 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
-using System.Globalization;
 using System.Text;
 using XtermSharp;
 
 namespace AvaloniaTerminal;
 
-public class TerminalControl : Control, ITerminalDelegate
+public partial class TerminalControl : UserControl, ITerminalDelegate
 {
+    private Grid _grid;
+
     static TerminalControl()
     {
         AffectsRender<TerminalControl>(ConsoleTextProperty);
@@ -21,6 +22,20 @@ public class TerminalControl : Control, ITerminalDelegate
         // get the dimensions of terminal (cols and rows)
         var dimensions = CalculateVisibleRowsAndColumns();
         var options = new TerminalOptions() { Cols = dimensions.cols, Rows = dimensions.rows };
+
+        _grid = new Grid();
+
+        this.Content = _grid;
+
+        for (int i = 0; i < dimensions.rows; i++)
+        {
+            _grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
+        }
+
+        for (int i = 0; i < dimensions.cols; i++)
+        {
+            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
+        }
 
         // the terminal itself and services
         Terminal = new Terminal(this, options);
@@ -157,8 +172,6 @@ public class TerminalControl : Control, ITerminalDelegate
     /// </summary>
     public Action<byte[]> UserInput;
 
-    private readonly StringBuilder _buffer = new();
-
     private Size? _textSize;
 
     // The code below is intended to not repaint too often, which can produce flicker, for example
@@ -175,32 +188,6 @@ public class TerminalControl : Control, ITerminalDelegate
             pendingDisplay = true;
             DispatcherTimer.RunOnce(UpdateDisplay, TimeSpan.FromMilliseconds(33.34)); // Delay of 33.34 ms
         }
-    }
-
-    public override void Render(DrawingContext drawingContext)
-    {
-        var brush = new SolidColorBrush
-        {
-            Color = Colors.Black
-        };
-
-        var typeface = new Typeface(FontName);
-
-        string[] array = ConsoleText.Split("\n");
-
-        for (int i = 0; i < array.Length; i++)
-        {
-            string line = array[i];
-            var point1 = GetPoint(i, 0);
-            drawingContext.DrawText(new FormattedText(line, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, typeface, FontSize, brush), point1);
-        }
-    }
-
-    private Avalonia.Point GetPoint(int row, int column)
-    {
-        var size = CalculateTextSize();
-
-        return new Avalonia.Point(column * size.Width, row * size.Height);
     }
 
     private Size CalculateTextSize()
@@ -284,24 +271,26 @@ public class TerminalControl : Control, ITerminalDelegate
 
     void FullBufferUpdate()
     {
-        _buffer.Clear();
+        _grid.Children.Clear();
 
         for (var line = Terminal.Buffer.YBase; line < Terminal.Buffer.YBase + Terminal.Rows; line++)
         {
             for (var cell = 0; cell < Terminal.Cols; cell++)
             {
                 var cd = Terminal.Buffer.Lines[line][cell];
+                var text = new TextBlock();
 
-                _buffer.Append(cd.Code == 0 ? ' ' : (char)cd.Rune);
-            }
+                text[Grid.ColumnProperty] = cell;
+                text[Grid.RowProperty] = line;
 
-            if (line < Terminal.Buffer.YBase + Terminal.Rows - 1)
-            {
-                _buffer.Append('\n');
+                text.FontFamily = FontFamily.Parse(FontName);
+                text.FontSize = FontSize;
+
+                text.Text = cd.Code == 0 ? "" : ((char)cd.Rune).ToString();
+                //text.Text = "X";
+                _grid.Children.Add(text);
             }
         }
-
-        Dispatcher.UIThread.Invoke(() => ConsoleText = _buffer.ToString(), DispatcherPriority.Input);
     }
 
     void UpdateDisplay()
