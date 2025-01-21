@@ -1,2 +1,2 @@
-# AvaloniaConsole
-Avalonia Console Control
+# AvaloniaTerminal
+Avalonia Terminal Control

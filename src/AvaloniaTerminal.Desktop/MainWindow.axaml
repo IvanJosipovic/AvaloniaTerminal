@@ -10,6 +10,6 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
     <StackPanel>
-        <local:TerminalControl Height="200" />
+        <local:TerminalControl Name="tc" Height="200" />
     </StackPanel>
 </Window>
