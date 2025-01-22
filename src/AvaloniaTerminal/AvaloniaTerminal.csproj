@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XtermSharp\XtermSharp.csproj" />
+    <ProjectReference Include="..\XtermSharp\XtermSharp.csproj" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
