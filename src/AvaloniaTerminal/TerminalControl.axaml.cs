@@ -462,7 +462,7 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
         return run.Size;
     }
 
-    private (int cols, int rows) CalculateVisibleRowsAndColumns()
+    public (int cols, int rows) CalculateVisibleRowsAndColumns()
     {
         if (Bounds.Width == 0 || Bounds.Height == 0)
         {
