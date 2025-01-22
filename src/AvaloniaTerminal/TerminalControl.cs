@@ -36,6 +36,142 @@ public partial class TerminalControl : Control, ITerminalDelegate
         this.Focus(NavigationMethod.Pointer);
     }
 
+
+    public static readonly StyledProperty<Terminal> TerminalProperty = AvaloniaProperty.Register<TerminalControl, Terminal>(nameof(Terminal));
+
+    public Terminal Terminal
+    {
+        get => GetValue(TerminalProperty);
+        set => SetValue(TerminalProperty, value);
+    }
+
+    public static readonly StyledProperty<SelectionService> SelectionServiceProperty = AvaloniaProperty.Register<TerminalControl, SelectionService>(nameof(SelectionService));
+
+    public SelectionService SelectionService
+    {
+        get => GetValue(SelectionServiceProperty);
+        set => SetValue(SelectionServiceProperty, value);
+    }
+
+    public static readonly StyledProperty<SearchService> SearchServiceProperty = AvaloniaProperty.Register<TerminalControl, SearchService>(nameof(SelectionService));
+
+    public SearchService SearchService
+    {
+        get => GetValue(SearchServiceProperty);
+        set => SetValue(SearchServiceProperty, value);
+    }
+
+    public static readonly StyledProperty<string> TitleProperty = AvaloniaProperty.Register<TerminalControl, string>(nameof(Title));
+
+    public string Title
+    {
+        get => GetValue(TitleProperty);
+        set => SetValue(TitleProperty, value);
+    }
+
+    public static readonly StyledProperty<SortedDictionary<(int x, int y), TextObject>> ConsoleTextProperty = AvaloniaProperty.Register<TerminalControl, SortedDictionary<(int x, int y), TextObject>>(nameof(ConsoleText), []);
+
+    public SortedDictionary<(int x, int y), TextObject> ConsoleText
+    {
+        get => GetValue(ConsoleTextProperty);
+        set => SetValue(ConsoleTextProperty, value);
+    }
+
+    public static readonly StyledProperty<string> FontNameProperty = AvaloniaProperty.Register<TerminalControl, string>(nameof(FontName), "Cascadia Mono");
+
+    public string FontName
+    {
+        get => GetValue(FontNameProperty);
+        set => SetValue(FontNameProperty, value);
+    }
+
+    public static readonly StyledProperty<double> FontSizeProperty = AvaloniaProperty.Register<TerminalControl, double>(nameof(FontSize), 12);
+
+    public double FontSize
+    {
+        get => GetValue(FontSizeProperty);
+        set => SetValue(FontSizeProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this <see cref="T:AvaloniaTerminal.TerminalControl"/> treats the "Alt/Option" key on the mac keyboard as a meta key,
+    /// which has the effect of sending ESC+letter when Meta-letter is pressed.   Otherwise, it passes the keystroke that MacOS provides from the OS keyboard.
+    /// </summary>
+    /// <value><c>true</c> if option acts as a meta key; otherwise, <c>false</c>.</value>
+    public bool OptionAsMetaKey { get; set; } = true;
+
+    /// <summary>
+    /// Gets a value indicating the relative position of the terminal scroller
+    /// </summary>
+    public double ScrollPosition
+    {
+        get
+        {
+            if (Terminal.Buffers.IsAlternateBuffer)
+                return 0;
+
+            // strictly speaking these ought not to be outside these bounds
+            if (Terminal.Buffer.YDisp <= 0)
+                return 0;
+
+            var maxScrollback = Terminal.Buffer.Lines.Length - Terminal.Rows;
+            if (Terminal.Buffer.YDisp >= maxScrollback)
+                return 1;
+
+            return (double)Terminal.Buffer.YDisp / (double)maxScrollback;
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating the scroll thumbsize
+    /// </summary>
+    public float ScrollThumbsize
+    {
+        get
+        {
+            if (Terminal.Buffers.IsAlternateBuffer)
+                return 0;
+
+            // the thumb size is the proportion of the visible content of the
+            // entire content but don't make it too small
+            return Math.Max((float)Terminal.Rows / (float)Terminal.Buffer.Lines.Length, 0.01f);
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether or not the user can scroll the terminal contents
+    /// </summary>
+    public bool CanScroll
+    {
+        get
+        {
+            var shouldBeEnabled = !Terminal.Buffers.IsAlternateBuffer;
+            shouldBeEnabled = shouldBeEnabled && Terminal.Buffer.HasScrollback;
+            shouldBeEnabled = shouldBeEnabled && Terminal.Buffer.Lines.Length > Terminal.Rows;
+            return shouldBeEnabled;
+        }
+    }
+
+    /// <summary>
+    ///  This event is raised when the terminal size (cols and rows, width, height) has change, due to a NSView frame changed.
+    /// </summary>
+    public event Action<int, int, double, double> SizeChanged;
+
+    /// <summary>
+    /// Invoked to raise input on the control, which should probably be sent to the actual child process or remote connection
+    /// </summary>
+    public Action<byte[]> UserInput;
+
+    private Size _consoleTextSize;
+
+    private Typeface _typeface;
+
+    // The code below is intended to not repaint too often, which can produce flicker, for example
+    // when the user refreshes the display, and this repaints the screen, as dispatch delivers data
+    // in blocks of 1024 bytes, which is not enough to cover the whole screen, so this delays
+    // the update for a 1/600th of a second.
+    bool pendingDisplay;
+
     private void TerminalControl_KeyUp(object? sender, KeyEventArgs e)
     {
         if (e.KeyModifiers is KeyModifiers.Control)
@@ -274,6 +410,9 @@ public partial class TerminalControl : Control, ITerminalDelegate
                 case Key.Tab:
                     Feed(EscapeSequences.CmdTab);
                     break;
+                case Key.Enter:
+                    Feed(EscapeSequences.CmdRet, 1);
+                    break;
                 default:
                     if (!string.IsNullOrEmpty(e.KeySymbol))
                     {
@@ -286,140 +425,6 @@ public partial class TerminalControl : Control, ITerminalDelegate
         e.Handled = true;
     }
 
-    public static readonly StyledProperty<Terminal> TerminalProperty = AvaloniaProperty.Register<TerminalControl, Terminal>(nameof(Terminal));
-
-    public Terminal Terminal
-    {
-        get => GetValue(TerminalProperty);
-        set => SetValue(TerminalProperty, value);
-    }
-
-    public static readonly StyledProperty<SelectionService> SelectionServiceProperty = AvaloniaProperty.Register<TerminalControl, SelectionService>(nameof(SelectionService));
-
-    public SelectionService SelectionService
-    {
-        get => GetValue(SelectionServiceProperty);
-        set => SetValue(SelectionServiceProperty, value);
-    }
-
-    public static readonly StyledProperty<SearchService> SearchServiceProperty = AvaloniaProperty.Register<TerminalControl, SearchService>(nameof(SelectionService));
-
-    public SearchService SearchService
-    {
-        get => GetValue(SearchServiceProperty);
-        set => SetValue(SearchServiceProperty, value);
-    }
-
-    public static readonly StyledProperty<string> TitleProperty = AvaloniaProperty.Register<TerminalControl, string>(nameof(Title));
-
-    public string Title
-    {
-        get => GetValue(TitleProperty);
-        set => SetValue(TitleProperty, value);
-    }
-
-    public static readonly StyledProperty<SortedDictionary<(int x, int y), TextObject>> ConsoleTextProperty = AvaloniaProperty.Register<TerminalControl, SortedDictionary<(int x, int y), TextObject>>(nameof(ConsoleText), []);
-
-    public SortedDictionary<(int x, int y), TextObject> ConsoleText
-    {
-        get => GetValue(ConsoleTextProperty);
-        set => SetValue(ConsoleTextProperty, value);
-    }
-
-    public static readonly StyledProperty<string> FontNameProperty = AvaloniaProperty.Register<TerminalControl, string>(nameof(FontName), "Cascadia Mono");
-
-    public string FontName
-    {
-        get => GetValue(FontNameProperty);
-        set => SetValue(FontNameProperty, value);
-    }
-
-    public static readonly StyledProperty<double> FontSizeProperty = AvaloniaProperty.Register<TerminalControl, double>(nameof(FontSize), 12);
-
-    public double FontSize
-    {
-        get => GetValue(FontSizeProperty);
-        set => SetValue(FontSizeProperty, value);
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether this <see cref="T:AvaloniaTerminal.TerminalControl"/> treats the "Alt/Option" key on the mac keyboard as a meta key,
-    /// which has the effect of sending ESC+letter when Meta-letter is pressed.   Otherwise, it passes the keystroke that MacOS provides from the OS keyboard.
-    /// </summary>
-    /// <value><c>true</c> if option acts as a meta key; otherwise, <c>false</c>.</value>
-    public bool OptionAsMetaKey { get; set; } = true;
-
-    /// <summary>
-    /// Gets a value indicating the relative position of the terminal scroller
-    /// </summary>
-    public double ScrollPosition
-    {
-        get
-        {
-            if (Terminal.Buffers.IsAlternateBuffer)
-                return 0;
-
-            // strictly speaking these ought not to be outside these bounds
-            if (Terminal.Buffer.YDisp <= 0)
-                return 0;
-
-            var maxScrollback = Terminal.Buffer.Lines.Length - Terminal.Rows;
-            if (Terminal.Buffer.YDisp >= maxScrollback)
-                return 1;
-
-            return (double)Terminal.Buffer.YDisp / (double)maxScrollback;
-        }
-    }
-
-    /// <summary>
-    /// Gets a value indicating the scroll thumbsize
-    /// </summary>
-    public float ScrollThumbsize
-    {
-        get
-        {
-            if (Terminal.Buffers.IsAlternateBuffer)
-                return 0;
-
-            // the thumb size is the proportion of the visible content of the
-            // entire content but don't make it too small
-            return Math.Max((float)Terminal.Rows / (float)Terminal.Buffer.Lines.Length, 0.01f);
-        }
-    }
-
-    /// <summary>
-    /// Gets a value indicating whether or not the user can scroll the terminal contents
-    /// </summary>
-    public bool CanScroll
-    {
-        get
-        {
-            var shouldBeEnabled = !Terminal.Buffers.IsAlternateBuffer;
-            shouldBeEnabled = shouldBeEnabled && Terminal.Buffer.HasScrollback;
-            shouldBeEnabled = shouldBeEnabled && Terminal.Buffer.Lines.Length > Terminal.Rows;
-            return shouldBeEnabled;
-        }
-    }
-
-    /// <summary>
-    ///  This event is raised when the terminal size (cols and rows, width, height) has change, due to a NSView frame changed.
-    /// </summary>
-    public event Action<int, int, float, float> SizeChanged;
-
-    /// <summary>
-    /// Invoked to raise input on the control, which should probably be sent to the actual child process or remote connection
-    /// </summary>
-    public Action<byte[]> UserInput;
-
-    private Size? ConsoleTextSize;
-
-    private Typeface _typeface;
-
-    // The code below is intended to not repaint too often, which can produce flicker, for example
-    // when the user refreshes the display, and this repains the screen, as dispatch delivers data
-    // in blocks of 1024 bytes, which is not enough to cover the whole screen, so this delays
-    // the update for a 1/600th of a secon.
-    bool pendingDisplay;
 
     void QueuePendingDisplay()
     {
@@ -431,32 +436,26 @@ public partial class TerminalControl : Control, ITerminalDelegate
         }
     }
 
-    private Size CalculateTextSize()
+    private void CalculateTextSize()
     {
-        if (ConsoleTextSize != null)
-        {
-            return ConsoleTextSize.Value;
-        }
-
         var myFont = FontFamily.Parse(FontName) ?? throw new ArgumentException($"The resource {FontName} is not a FontFamily.");
 
         _typeface = new Typeface(myFont);
         var shaped = TextShaper.Current.ShapeText("a", new TextShaperOptions(_typeface.GlyphTypeface, FontSize));
         var run = new ShapedTextRun(shaped, new GenericTextRunProperties(_typeface, FontSize));
-        ConsoleTextSize = run.Size;
 
-        return run.Size;
+        _consoleTextSize = run.Size;
     }
 
-    public (int cols, int rows) CalculateVisibleRowsAndColumns()
+    private (int cols, int rows) CalculateVisibleRowsAndColumns()
     {
         if (Bounds.Width == 0 || Bounds.Height == 0)
         {
             return (80, 25);
         }
 
-        var cols = (int)(Bounds.Width / ConsoleTextSize.Value.Width);
-        var rows = (int)(Bounds.Height / ConsoleTextSize.Value.Height);
+        var cols = (int)(Bounds.Width / _consoleTextSize.Width);
+        var rows = (int)(Bounds.Height / _consoleTextSize.Height);
 
         return (cols, rows);
     }
@@ -499,7 +498,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
         var size = CalculateVisibleRowsAndColumns();
         Terminal.Resize(size.cols, size.rows);
 
-        //SendResize();
+        SizeChanged?.Invoke(size.cols, size.rows, Bounds.Width, Bounds.Height);
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
@@ -847,7 +846,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
         };
     }
 
-    private TextObject SetStyling(TextObject control, CharData cd)
+    private static TextObject SetStyling(TextObject control, CharData cd)
     {
         var attribute = cd.Attribute;
 
@@ -948,7 +947,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
 
         foreach (var item in ConsoleText)
         {
-            var rect2 = new Rect(ConsoleTextSize.Value.Width * item.Key.x, ConsoleTextSize.Value.Height * item.Key.y, ConsoleTextSize.Value.Width, ConsoleTextSize.Value.Height);
+            var rect2 = new Rect(_consoleTextSize.Width * item.Key.x, _consoleTextSize.Height * item.Key.y, _consoleTextSize.Width +1, _consoleTextSize.Height+1);
             context.FillRectangle(item.Value.Background, rect2);
 
             var formattedText = new FormattedText(item.Value.Text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, FontSize, item.Value.Foreground);
@@ -956,7 +955,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
             formattedText.SetFontWeight(item.Value.FontWeight);
             formattedText.SetFontStyle(item.Value.FontStyle);
 
-            context.DrawText(formattedText, new Point(ConsoleTextSize.Value.Width * item.Key.x, ConsoleTextSize.Value.Height * item.Key.y));
+            context.DrawText(formattedText, new Point(_consoleTextSize.Width * item.Key.x, _consoleTextSize.Height * item.Key.y));
         }
     }
 }

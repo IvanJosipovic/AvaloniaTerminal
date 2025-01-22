@@ -10,9 +10,6 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
     <Grid>
-        <local:TerminalControl
-            Name="tc"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch" />
+        <local:TerminalControl Name="tc" />
     </Grid>
 </Window>

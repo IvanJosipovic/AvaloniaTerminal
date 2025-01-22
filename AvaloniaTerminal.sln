@@ -9,7 +9,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvaloniaTerminal", "src\Ava
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3BFD487D-E975-46C9-8F37-2BE9321C4215}"
 	ProjectSection(SolutionItems) = preProject
+		.releaserc.json = .releaserc.json
 		README.md = README.md
+		.github\workflows\release.yaml = .github\workflows\release.yaml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XtermSharp", "src\XtermSharp\XtermSharp.csproj", "{F865E554-E33E-4116-B688-F75A74560008}"
