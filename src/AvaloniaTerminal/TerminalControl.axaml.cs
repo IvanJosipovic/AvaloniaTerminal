@@ -6,6 +6,7 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using System.Text;
 using XtermSharp;
+using Color = Avalonia.Media.Color;
 
 namespace AvaloniaTerminal;
 
@@ -514,6 +515,23 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
     {
         var size = CalculateVisibleRowsAndColumns();
         Terminal.Resize(size.cols, size.rows);
+
+        for (int i = 0; i < size.rows; i++)
+        {
+            if (_grid.RowDefinitions.Count >= i)
+            {
+                _grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
+            }
+        }
+
+        for (int i = 0; i < size.cols; i++)
+        {
+            if (_grid.ColumnDefinitions.Count >= i)
+            {
+                _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
+            }
+        }
+
         //SendResize();
     }
 
@@ -540,6 +558,8 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
 
                 text.FontFamily = FontFamily.Parse(FontName);
                 text.FontSize = FontSize;
+
+                text = SetStyling(text, cd);
 
                 text.Text = cd.Code == 0 ? "" : ((char)cd.Rune).ToString();
                 //text.Text = "X";
@@ -578,6 +598,8 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
                 text.FontFamily = FontFamily.Parse(FontName);
                 text.FontSize = FontSize;
 
+                text = SetStyling(text, cd);
+
                 text.Text = cd.Code == 0 ? "" : ((char)cd.Rune).ToString();
 
                 if (existing == null)
@@ -613,5 +635,335 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
         SearchService.Invalidate();
         Terminal.Feed([text], -1);
         QueuePendingDisplay();
+    }
+
+    private static Brush ConvertXtermColor(int xtermColor)
+    {
+        return xtermColor switch
+        {
+            0 => new SolidColorBrush(Color.FromRgb(0, 0, 0)),
+            1 => new SolidColorBrush(Color.FromRgb(128, 0, 0)),
+            2 => new SolidColorBrush(Color.FromRgb(0, 128, 0)),
+            3 => new SolidColorBrush(Color.FromRgb(128, 128, 0)),
+            4 => new SolidColorBrush(Color.FromRgb(0, 0, 128)),
+            5 => new SolidColorBrush(Color.FromRgb(128, 0, 128)),
+            6 => new SolidColorBrush(Color.FromRgb(0, 128, 128)),
+            7 => new SolidColorBrush(Color.FromRgb(192, 192, 192)),
+            8 => new SolidColorBrush(Color.FromRgb(128, 128, 128)),
+            9 => new SolidColorBrush(Color.FromRgb(255, 0, 0)),
+            10 => new SolidColorBrush(Color.FromRgb(0, 255, 0)),
+            11 => new SolidColorBrush(Color.FromRgb(255, 255, 0)),
+            12 => new SolidColorBrush(Color.FromRgb(0, 0, 255)),
+            13 => new SolidColorBrush(Color.FromRgb(255, 0, 255)),
+            14 => new SolidColorBrush(Color.FromRgb(0, 255, 255)),
+            15 => new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+            16 => new SolidColorBrush(Color.FromRgb(0, 0, 0)),
+            17 => new SolidColorBrush(Color.FromRgb(0, 0, 95)),
+            18 => new SolidColorBrush(Color.FromRgb(0, 0, 135)),
+            19 => new SolidColorBrush(Color.FromRgb(0, 0, 175)),
+            20 => new SolidColorBrush(Color.FromRgb(0, 0, 215)),
+            21 => new SolidColorBrush(Color.FromRgb(0, 0, 255)),
+            22 => new SolidColorBrush(Color.FromRgb(0, 95, 0)),
+            23 => new SolidColorBrush(Color.FromRgb(0, 95, 95)),
+            24 => new SolidColorBrush(Color.FromRgb(0, 95, 135)),
+            25 => new SolidColorBrush(Color.FromRgb(0, 95, 175)),
+            26 => new SolidColorBrush(Color.FromRgb(0, 95, 215)),
+            27 => new SolidColorBrush(Color.FromRgb(0, 95, 255)),
+            28 => new SolidColorBrush(Color.FromRgb(0, 135, 0)),
+            29 => new SolidColorBrush(Color.FromRgb(0, 135, 95)),
+            30 => new SolidColorBrush(Color.FromRgb(0, 135, 135)),
+            31 => new SolidColorBrush(Color.FromRgb(0, 135, 175)),
+            32 => new SolidColorBrush(Color.FromRgb(0, 135, 215)),
+            33 => new SolidColorBrush(Color.FromRgb(0, 135, 255)),
+            34 => new SolidColorBrush(Color.FromRgb(0, 175, 0)),
+            35 => new SolidColorBrush(Color.FromRgb(0, 175, 95)),
+            36 => new SolidColorBrush(Color.FromRgb(0, 175, 135)),
+            37 => new SolidColorBrush(Color.FromRgb(0, 175, 175)),
+            38 => new SolidColorBrush(Color.FromRgb(0, 175, 215)),
+            39 => new SolidColorBrush(Color.FromRgb(0, 175, 255)),
+            40 => new SolidColorBrush(Color.FromRgb(0, 215, 0)),
+            41 => new SolidColorBrush(Color.FromRgb(0, 215, 95)),
+            42 => new SolidColorBrush(Color.FromRgb(0, 215, 135)),
+            43 => new SolidColorBrush(Color.FromRgb(0, 215, 175)),
+            44 => new SolidColorBrush(Color.FromRgb(0, 215, 215)),
+            45 => new SolidColorBrush(Color.FromRgb(0, 215, 255)),
+            46 => new SolidColorBrush(Color.FromRgb(0, 255, 0)),
+            47 => new SolidColorBrush(Color.FromRgb(0, 255, 95)),
+            48 => new SolidColorBrush(Color.FromRgb(0, 255, 135)),
+            49 => new SolidColorBrush(Color.FromRgb(0, 255, 175)),
+            50 => new SolidColorBrush(Color.FromRgb(0, 255, 215)),
+            51 => new SolidColorBrush(Color.FromRgb(0, 255, 255)),
+            52 => new SolidColorBrush(Color.FromRgb(95, 0, 0)),
+            53 => new SolidColorBrush(Color.FromRgb(95, 0, 95)),
+            54 => new SolidColorBrush(Color.FromRgb(95, 0, 135)),
+            55 => new SolidColorBrush(Color.FromRgb(95, 0, 175)),
+            56 => new SolidColorBrush(Color.FromRgb(95, 0, 215)),
+            57 => new SolidColorBrush(Color.FromRgb(95, 0, 255)),
+            58 => new SolidColorBrush(Color.FromRgb(95, 95, 0)),
+            59 => new SolidColorBrush(Color.FromRgb(95, 95, 95)),
+            60 => new SolidColorBrush(Color.FromRgb(95, 95, 135)),
+            61 => new SolidColorBrush(Color.FromRgb(95, 95, 175)),
+            62 => new SolidColorBrush(Color.FromRgb(95, 95, 215)),
+            63 => new SolidColorBrush(Color.FromRgb(95, 95, 255)),
+            64 => new SolidColorBrush(Color.FromRgb(95, 135, 0)),
+            65 => new SolidColorBrush(Color.FromRgb(95, 135, 95)),
+            66 => new SolidColorBrush(Color.FromRgb(95, 135, 135)),
+            67 => new SolidColorBrush(Color.FromRgb(95, 135, 175)),
+            68 => new SolidColorBrush(Color.FromRgb(95, 135, 215)),
+            69 => new SolidColorBrush(Color.FromRgb(95, 135, 255)),
+            70 => new SolidColorBrush(Color.FromRgb(95, 175, 0)),
+            71 => new SolidColorBrush(Color.FromRgb(95, 175, 95)),
+            72 => new SolidColorBrush(Color.FromRgb(95, 175, 135)),
+            73 => new SolidColorBrush(Color.FromRgb(95, 175, 175)),
+            74 => new SolidColorBrush(Color.FromRgb(95, 175, 215)),
+            75 => new SolidColorBrush(Color.FromRgb(95, 175, 255)),
+            76 => new SolidColorBrush(Color.FromRgb(95, 215, 0)),
+            77 => new SolidColorBrush(Color.FromRgb(95, 215, 95)),
+            78 => new SolidColorBrush(Color.FromRgb(95, 215, 135)),
+            79 => new SolidColorBrush(Color.FromRgb(95, 215, 175)),
+            80 => new SolidColorBrush(Color.FromRgb(95, 215, 215)),
+            81 => new SolidColorBrush(Color.FromRgb(95, 215, 255)),
+            82 => new SolidColorBrush(Color.FromRgb(95, 255, 0)),
+            83 => new SolidColorBrush(Color.FromRgb(95, 255, 95)),
+            84 => new SolidColorBrush(Color.FromRgb(95, 255, 135)),
+            85 => new SolidColorBrush(Color.FromRgb(95, 255, 175)),
+            86 => new SolidColorBrush(Color.FromRgb(95, 255, 215)),
+            87 => new SolidColorBrush(Color.FromRgb(95, 255, 255)),
+            88 => new SolidColorBrush(Color.FromRgb(135, 0, 0)),
+            89 => new SolidColorBrush(Color.FromRgb(135, 0, 95)),
+            90 => new SolidColorBrush(Color.FromRgb(135, 0, 135)),
+            91 => new SolidColorBrush(Color.FromRgb(135, 0, 175)),
+            92 => new SolidColorBrush(Color.FromRgb(135, 0, 215)),
+            93 => new SolidColorBrush(Color.FromRgb(135, 0, 255)),
+            94 => new SolidColorBrush(Color.FromRgb(135, 95, 0)),
+            95 => new SolidColorBrush(Color.FromRgb(135, 95, 95)),
+            96 => new SolidColorBrush(Color.FromRgb(135, 95, 135)),
+            97 => new SolidColorBrush(Color.FromRgb(135, 95, 175)),
+            98 => new SolidColorBrush(Color.FromRgb(135, 95, 215)),
+            99 => new SolidColorBrush(Color.FromRgb(135, 95, 255)),
+            100 => new SolidColorBrush(Color.FromRgb(135, 135, 0)),
+            101 => new SolidColorBrush(Color.FromRgb(135, 135, 95)),
+            102 => new SolidColorBrush(Color.FromRgb(135, 135, 135)),
+            103 => new SolidColorBrush(Color.FromRgb(135, 135, 175)),
+            104 => new SolidColorBrush(Color.FromRgb(135, 135, 215)),
+            105 => new SolidColorBrush(Color.FromRgb(135, 135, 255)),
+            106 => new SolidColorBrush(Color.FromRgb(135, 175, 0)),
+            107 => new SolidColorBrush(Color.FromRgb(135, 175, 95)),
+            108 => new SolidColorBrush(Color.FromRgb(135, 175, 135)),
+            109 => new SolidColorBrush(Color.FromRgb(135, 175, 175)),
+            110 => new SolidColorBrush(Color.FromRgb(135, 175, 215)),
+            111 => new SolidColorBrush(Color.FromRgb(135, 175, 255)),
+            112 => new SolidColorBrush(Color.FromRgb(135, 215, 0)),
+            113 => new SolidColorBrush(Color.FromRgb(135, 215, 95)),
+            114 => new SolidColorBrush(Color.FromRgb(135, 215, 135)),
+            115 => new SolidColorBrush(Color.FromRgb(135, 215, 175)),
+            116 => new SolidColorBrush(Color.FromRgb(135, 215, 215)),
+            117 => new SolidColorBrush(Color.FromRgb(135, 215, 255)),
+            118 => new SolidColorBrush(Color.FromRgb(135, 255, 0)),
+            119 => new SolidColorBrush(Color.FromRgb(135, 255, 95)),
+            120 => new SolidColorBrush(Color.FromRgb(135, 255, 135)),
+            121 => new SolidColorBrush(Color.FromRgb(135, 255, 175)),
+            122 => new SolidColorBrush(Color.FromRgb(135, 255, 215)),
+            123 => new SolidColorBrush(Color.FromRgb(135, 255, 255)),
+            124 => new SolidColorBrush(Color.FromRgb(175, 0, 0)),
+            125 => new SolidColorBrush(Color.FromRgb(175, 0, 95)),
+            126 => new SolidColorBrush(Color.FromRgb(175, 0, 135)),
+            127 => new SolidColorBrush(Color.FromRgb(175, 0, 175)),
+            128 => new SolidColorBrush(Color.FromRgb(175, 0, 215)),
+            129 => new SolidColorBrush(Color.FromRgb(175, 0, 255)),
+            130 => new SolidColorBrush(Color.FromRgb(175, 95, 0)),
+            131 => new SolidColorBrush(Color.FromRgb(175, 95, 95)),
+            132 => new SolidColorBrush(Color.FromRgb(175, 95, 135)),
+            133 => new SolidColorBrush(Color.FromRgb(175, 95, 175)),
+            134 => new SolidColorBrush(Color.FromRgb(175, 95, 215)),
+            135 => new SolidColorBrush(Color.FromRgb(175, 95, 255)),
+            136 => new SolidColorBrush(Color.FromRgb(175, 135, 0)),
+            137 => new SolidColorBrush(Color.FromRgb(175, 135, 95)),
+            138 => new SolidColorBrush(Color.FromRgb(175, 135, 135)),
+            139 => new SolidColorBrush(Color.FromRgb(175, 135, 175)),
+            140 => new SolidColorBrush(Color.FromRgb(175, 135, 215)),
+            141 => new SolidColorBrush(Color.FromRgb(175, 135, 255)),
+            142 => new SolidColorBrush(Color.FromRgb(175, 175, 0)),
+            143 => new SolidColorBrush(Color.FromRgb(175, 175, 95)),
+            144 => new SolidColorBrush(Color.FromRgb(175, 175, 135)),
+            145 => new SolidColorBrush(Color.FromRgb(175, 175, 175)),
+            146 => new SolidColorBrush(Color.FromRgb(175, 175, 215)),
+            147 => new SolidColorBrush(Color.FromRgb(175, 175, 255)),
+            148 => new SolidColorBrush(Color.FromRgb(175, 215, 0)),
+            149 => new SolidColorBrush(Color.FromRgb(175, 215, 95)),
+            150 => new SolidColorBrush(Color.FromRgb(175, 215, 135)),
+            151 => new SolidColorBrush(Color.FromRgb(175, 215, 175)),
+            152 => new SolidColorBrush(Color.FromRgb(175, 215, 215)),
+            153 => new SolidColorBrush(Color.FromRgb(175, 215, 255)),
+            154 => new SolidColorBrush(Color.FromRgb(175, 255, 0)),
+            155 => new SolidColorBrush(Color.FromRgb(175, 255, 95)),
+            156 => new SolidColorBrush(Color.FromRgb(175, 255, 135)),
+            157 => new SolidColorBrush(Color.FromRgb(175, 255, 175)),
+            158 => new SolidColorBrush(Color.FromRgb(175, 255, 215)),
+            159 => new SolidColorBrush(Color.FromRgb(175, 255, 255)),
+            160 => new SolidColorBrush(Color.FromRgb(215, 0, 0)),
+            161 => new SolidColorBrush(Color.FromRgb(215, 0, 95)),
+            162 => new SolidColorBrush(Color.FromRgb(215, 0, 135)),
+            163 => new SolidColorBrush(Color.FromRgb(215, 0, 175)),
+            164 => new SolidColorBrush(Color.FromRgb(215, 0, 215)),
+            165 => new SolidColorBrush(Color.FromRgb(215, 0, 255)),
+            166 => new SolidColorBrush(Color.FromRgb(215, 95, 0)),
+            167 => new SolidColorBrush(Color.FromRgb(215, 95, 95)),
+            168 => new SolidColorBrush(Color.FromRgb(215, 95, 135)),
+            169 => new SolidColorBrush(Color.FromRgb(215, 95, 175)),
+            170 => new SolidColorBrush(Color.FromRgb(215, 95, 215)),
+            171 => new SolidColorBrush(Color.FromRgb(215, 95, 255)),
+            172 => new SolidColorBrush(Color.FromRgb(215, 135, 0)),
+            173 => new SolidColorBrush(Color.FromRgb(215, 135, 95)),
+            174 => new SolidColorBrush(Color.FromRgb(215, 135, 135)),
+            175 => new SolidColorBrush(Color.FromRgb(215, 135, 175)),
+            176 => new SolidColorBrush(Color.FromRgb(215, 135, 215)),
+            177 => new SolidColorBrush(Color.FromRgb(215, 135, 255)),
+            178 => new SolidColorBrush(Color.FromRgb(215, 175, 0)),
+            179 => new SolidColorBrush(Color.FromRgb(215, 175, 95)),
+            180 => new SolidColorBrush(Color.FromRgb(215, 175, 135)),
+            181 => new SolidColorBrush(Color.FromRgb(215, 175, 175)),
+            182 => new SolidColorBrush(Color.FromRgb(215, 175, 215)),
+            183 => new SolidColorBrush(Color.FromRgb(215, 175, 255)),
+            184 => new SolidColorBrush(Color.FromRgb(215, 215, 0)),
+            185 => new SolidColorBrush(Color.FromRgb(215, 215, 95)),
+            186 => new SolidColorBrush(Color.FromRgb(215, 215, 135)),
+            187 => new SolidColorBrush(Color.FromRgb(215, 215, 175)),
+            188 => new SolidColorBrush(Color.FromRgb(215, 215, 215)),
+            189 => new SolidColorBrush(Color.FromRgb(215, 215, 255)),
+            190 => new SolidColorBrush(Color.FromRgb(215, 255, 0)),
+            191 => new SolidColorBrush(Color.FromRgb(215, 255, 95)),
+            192 => new SolidColorBrush(Color.FromRgb(215, 255, 135)),
+            193 => new SolidColorBrush(Color.FromRgb(215, 255, 175)),
+            194 => new SolidColorBrush(Color.FromRgb(215, 255, 215)),
+            195 => new SolidColorBrush(Color.FromRgb(215, 255, 255)),
+            196 => new SolidColorBrush(Color.FromRgb(255, 0, 0)),
+            197 => new SolidColorBrush(Color.FromRgb(255, 0, 95)),
+            198 => new SolidColorBrush(Color.FromRgb(255, 0, 135)),
+            199 => new SolidColorBrush(Color.FromRgb(255, 0, 175)),
+            200 => new SolidColorBrush(Color.FromRgb(255, 0, 215)),
+            201 => new SolidColorBrush(Color.FromRgb(255, 0, 255)),
+            202 => new SolidColorBrush(Color.FromRgb(255, 95, 0)),
+            203 => new SolidColorBrush(Color.FromRgb(255, 95, 95)),
+            204 => new SolidColorBrush(Color.FromRgb(255, 95, 135)),
+            205 => new SolidColorBrush(Color.FromRgb(255, 95, 175)),
+            206 => new SolidColorBrush(Color.FromRgb(255, 95, 215)),
+            207 => new SolidColorBrush(Color.FromRgb(255, 95, 255)),
+            208 => new SolidColorBrush(Color.FromRgb(255, 135, 0)),
+            209 => new SolidColorBrush(Color.FromRgb(255, 135, 95)),
+            210 => new SolidColorBrush(Color.FromRgb(255, 135, 135)),
+            211 => new SolidColorBrush(Color.FromRgb(255, 135, 175)),
+            212 => new SolidColorBrush(Color.FromRgb(255, 135, 215)),
+            213 => new SolidColorBrush(Color.FromRgb(255, 135, 255)),
+            214 => new SolidColorBrush(Color.FromRgb(255, 175, 0)),
+            215 => new SolidColorBrush(Color.FromRgb(255, 175, 95)),
+            216 => new SolidColorBrush(Color.FromRgb(255, 175, 135)),
+            217 => new SolidColorBrush(Color.FromRgb(255, 175, 175)),
+            218 => new SolidColorBrush(Color.FromRgb(255, 175, 215)),
+            219 => new SolidColorBrush(Color.FromRgb(255, 175, 255)),
+            220 => new SolidColorBrush(Color.FromRgb(255, 215, 0)),
+            221 => new SolidColorBrush(Color.FromRgb(255, 215, 95)),
+            222 => new SolidColorBrush(Color.FromRgb(255, 215, 135)),
+            223 => new SolidColorBrush(Color.FromRgb(255, 215, 175)),
+            224 => new SolidColorBrush(Color.FromRgb(255, 215, 215)),
+            225 => new SolidColorBrush(Color.FromRgb(255, 215, 255)),
+            226 => new SolidColorBrush(Color.FromRgb(255, 255, 0)),
+            227 => new SolidColorBrush(Color.FromRgb(255, 255, 95)),
+            228 => new SolidColorBrush(Color.FromRgb(255, 255, 135)),
+            229 => new SolidColorBrush(Color.FromRgb(255, 255, 175)),
+            230 => new SolidColorBrush(Color.FromRgb(255, 255, 215)),
+            231 => new SolidColorBrush(Color.FromRgb(255, 255, 255)),
+            232 => new SolidColorBrush(Color.FromRgb(8, 8, 8)),
+            233 => new SolidColorBrush(Color.FromRgb(18, 18, 18)),
+            234 => new SolidColorBrush(Color.FromRgb(28, 28, 28)),
+            235 => new SolidColorBrush(Color.FromRgb(38, 38, 38)),
+            236 => new SolidColorBrush(Color.FromRgb(48, 48, 48)),
+            237 => new SolidColorBrush(Color.FromRgb(58, 58, 58)),
+            238 => new SolidColorBrush(Color.FromRgb(68, 68, 68)),
+            239 => new SolidColorBrush(Color.FromRgb(78, 78, 78)),
+            240 => new SolidColorBrush(Color.FromRgb(88, 88, 88)),
+            241 => new SolidColorBrush(Color.FromRgb(98, 98, 98)),
+            242 => new SolidColorBrush(Color.FromRgb(108, 108, 108)),
+            243 => new SolidColorBrush(Color.FromRgb(118, 118, 118)),
+            244 => new SolidColorBrush(Color.FromRgb(128, 128, 128)),
+            245 => new SolidColorBrush(Color.FromRgb(138, 138, 138)),
+            246 => new SolidColorBrush(Color.FromRgb(148, 148, 148)),
+            247 => new SolidColorBrush(Color.FromRgb(158, 158, 158)),
+            248 => new SolidColorBrush(Color.FromRgb(168, 168, 168)),
+            249 => new SolidColorBrush(Color.FromRgb(178, 178, 178)),
+            250 => new SolidColorBrush(Color.FromRgb(188, 188, 188)),
+            251 => new SolidColorBrush(Color.FromRgb(198, 198, 198)),
+            252 => new SolidColorBrush(Color.FromRgb(208, 208, 208)),
+            253 => new SolidColorBrush(Color.FromRgb(218, 218, 218)),
+            254 => new SolidColorBrush(Color.FromRgb(228, 228, 228)),
+            255 => new SolidColorBrush(Color.FromRgb(238, 238, 238)),
+            _ => throw new ArgumentOutOfRangeException(nameof(xtermColor), "Color code must be between 0 and 255."),
+        };
+    }
+
+    private static TextBlock SetStyling(TextBlock control, CharData cd)
+    {
+        var attribute = cd.Attribute;
+
+        // ((int)flags << 18) | (fg << 9) | bg;
+        int bg = attribute & 0x1ff;
+        int fg = (attribute >> 9) & 0x1ff;
+        var flags = (FLAGS)(attribute >> 18);
+
+        if (flags.HasFlag(FLAGS.INVERSE))
+        {
+            var tmp = bg;
+            bg = fg;
+            fg = tmp;
+
+            if (fg == Renderer.DefaultColor)
+                fg = Renderer.InvertedDefaultColor;
+            if (bg == Renderer.DefaultColor)
+                bg = Renderer.InvertedDefaultColor;
+        }
+        if (flags.HasFlag(FLAGS.BOLD))
+        {
+            control.FontWeight = FontWeight.Bold;
+        }
+        if (flags.HasFlag(FLAGS.ITALIC))
+        {
+            control.FontStyle = FontStyle.Italic;
+        }
+        if (flags.HasFlag(FLAGS.UNDERLINE))
+        {
+            control.TextDecorations = TextDecorations.Underline;
+        }
+        if (flags.HasFlag(FLAGS.CrossedOut))
+        {
+            control.TextDecorations = TextDecorations.Strikethrough;
+        }
+
+        if (fg <= 255)
+        {
+            control.Foreground = ConvertXtermColor(fg);
+        }
+        else if (fg == 256) // DefaultColor
+        {
+            control.Foreground = ConvertXtermColor(15);
+        }
+        else if (fg == 257) // InvertedDefaultColor
+        {
+            control.Foreground = ConvertXtermColor(0);
+        }
+
+        if (bg <= 255)
+        {
+            control.Background = ConvertXtermColor(bg);
+        }
+        else if (bg == 256) // DefaultColor
+        {
+            control.Background = ConvertXtermColor(0);
+        }
+        else if (bg == 257) // InvertedDefaultColor
+        {
+            control.Background = ConvertXtermColor(15);
+        }
+
+        return control;
     }
 }

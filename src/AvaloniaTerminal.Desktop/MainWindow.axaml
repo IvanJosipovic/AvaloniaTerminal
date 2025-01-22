@@ -10,6 +10,10 @@
     d:DesignWidth="400"
     mc:Ignorable="d">
     <StackPanel>
-        <local:TerminalControl Name="tc" />
+        <local:TerminalControl
+            Name="tc"
+            Height="700"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch" />
     </StackPanel>
 </Window>
