@@ -4,20 +4,17 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
+using System.Globalization;
 using System.Text;
 using XtermSharp;
 using Color = Avalonia.Media.Color;
+using Point = Avalonia.Point;
 
 namespace AvaloniaTerminal;
 
 public partial class TerminalControl : UserControl, ITerminalDelegate
 {
     private Grid _grid;
-
-    static TerminalControl()
-    {
-        AffectsRender<TerminalControl>(ConsoleTextProperty);
-    }
 
     public TerminalControl()
     {
@@ -335,9 +332,9 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
         set => SetValue(TitleProperty, value);
     }
 
-    public static readonly StyledProperty<string> ConsoleTextProperty = AvaloniaProperty.Register<TerminalControl, string>(nameof(ConsoleText));
+    public static readonly StyledProperty<SortedDictionary<(int x, int y), TextObject>> ConsoleTextProperty = AvaloniaProperty.Register<TerminalControl, SortedDictionary<(int x, int y), TextObject>>(nameof(ConsoleText), []);
 
-    public string ConsoleText
+    public SortedDictionary<(int x, int y), TextObject> ConsoleText
     {
         get => GetValue(ConsoleTextProperty);
         set => SetValue(ConsoleTextProperty, value);
@@ -428,7 +425,9 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
     /// </summary>
     public Action<byte[]> UserInput;
 
-    private Size? _textSize;
+    private Size? ConsoleTextSize;
+
+    private Typeface _typeface;
 
     // The code below is intended to not repaint too often, which can produce flicker, for example
     // when the user refreshes the display, and this repains the screen, as dispatch delivers data
@@ -448,17 +447,17 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
 
     private Size CalculateTextSize()
     {
-        if (_textSize != null)
+        if (ConsoleTextSize != null)
         {
-            return _textSize.Value;
+            return ConsoleTextSize.Value;
         }
 
         var myFont = FontFamily.Parse(FontName) ?? throw new ArgumentException($"The resource {FontName} is not a FontFamily.");
 
-        var typeface = new Typeface(myFont);
-        var shaped = TextShaper.Current.ShapeText("a", new TextShaperOptions(typeface.GlyphTypeface, FontSize));
-        var run = new ShapedTextRun(shaped, new GenericTextRunProperties(typeface, FontSize));
-        _textSize = run.Size;
+        _typeface = new Typeface(myFont);
+        var shaped = TextShaper.Current.ShapeText("a", new TextShaperOptions(_typeface.GlyphTypeface, FontSize));
+        var run = new ShapedTextRun(shaped, new GenericTextRunProperties(_typeface, FontSize));
+        ConsoleTextSize = run.Size;
 
         return run.Size;
     }
@@ -544,26 +543,16 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
 
     void FullBufferUpdate()
     {
-        _grid.Children.Clear();
-
         for (var line = Terminal.Buffer.YBase; line < Terminal.Buffer.YBase + Terminal.Rows; line++)
         {
             for (var cell = 0; cell < Terminal.Cols; cell++)
             {
                 var cd = Terminal.Buffer.Lines[line][cell];
-                var text = new TextBlock();
 
-                text[Grid.ColumnProperty] = cell;
-                text[Grid.RowProperty] = line;
-
-                text.FontFamily = FontFamily.Parse(FontName);
-                text.FontSize = FontSize;
-
-                text = SetStyling(text, cd);
+                var text = SetStyling(new TextObject(), cd);
 
                 text.Text = cd.Code == 0 ? "" : ((char)cd.Rune).ToString();
-                //text.Text = "X";
-                _grid.Children.Add(text);
+                ConsoleText[(cell, line)] = text;
             }
         }
     }
@@ -580,31 +569,18 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
             {
                 var cd = Terminal.Buffer.Lines[line][cell];
 
-                var existing = _grid.Children.FirstOrDefault(c => c.GetValue(Grid.RowProperty) == line && c.GetValue(Grid.ColumnProperty) == cell);
-
-                TextBlock text = null;
-
-                if (existing is TextBlock txt)
+                if (ConsoleText.TryGetValue((cell, line), out TextObject text))
                 {
-                    text = txt;
+                    text = SetStyling(text, cd);
+
+                    text.Text = cd.Code == 0 ? "" : ((char)cd.Rune).ToString();
                 }
                 else
                 {
-                    text = new TextBlock();
-                    text[Grid.ColumnProperty] = cell;
-                    text[Grid.RowProperty] = line;
-                }
+                    var text2 = SetStyling(new TextObject(), cd);
 
-                text.FontFamily = FontFamily.Parse(FontName);
-                text.FontSize = FontSize;
-
-                text = SetStyling(text, cd);
-
-                text.Text = cd.Code == 0 ? "" : ((char)cd.Rune).ToString();
-
-                if (existing == null)
-                {
-                    _grid.Children.Add(text);
+                    text2.Text = cd.Code == 0 ? "" : ((char)cd.Rune).ToString();
+                    ConsoleText[(cell, line)] = text2;
                 }
             }
         }
@@ -613,6 +589,7 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
         //UpdateScroller();
 
         pendingDisplay = false;
+        InvalidateVisual();
     }
 
     // Simple tester API.
@@ -901,7 +878,7 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
         };
     }
 
-    private static TextBlock SetStyling(TextBlock control, CharData cd)
+    private TextObject SetStyling(TextObject control, CharData cd)
     {
         var attribute = cd.Attribute;
 
@@ -921,21 +898,49 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
             if (bg == Renderer.DefaultColor)
                 bg = Renderer.InvertedDefaultColor;
         }
+
         if (flags.HasFlag(FLAGS.BOLD))
         {
             control.FontWeight = FontWeight.Bold;
         }
+        else
+        {
+            control.FontWeight = FontWeight.Normal;
+        }
+
         if (flags.HasFlag(FLAGS.ITALIC))
         {
             control.FontStyle = FontStyle.Italic;
         }
+        else
+        {
+            control.FontStyle = FontStyle.Normal;
+        }
+
         if (flags.HasFlag(FLAGS.UNDERLINE))
         {
             control.TextDecorations = TextDecorations.Underline;
         }
+        else
+        {
+            var dec = control.TextDecorations?.FirstOrDefault(x => x.Location == TextDecorationLocation.Underline);
+            if (dec != null)
+            {
+                control.TextDecorations.Remove(dec);
+            }
+        }
+
         if (flags.HasFlag(FLAGS.CrossedOut))
         {
             control.TextDecorations = TextDecorations.Strikethrough;
+        }
+        else
+        {
+            var dec = control.TextDecorations?.FirstOrDefault(x => x.Location == TextDecorationLocation.Strikethrough);
+            if (dec != null)
+            {
+                control.TextDecorations.Remove(dec);
+            }
         }
 
         if (fg <= 255)
@@ -966,4 +971,38 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
 
         return control;
     }
+
+    public override void Render(DrawingContext context)
+    {
+        var rect = new Rect(0,0, Bounds.Width, Bounds.Height);
+        context.FillRectangle(Brushes.Black, rect);
+
+        foreach (var item in ConsoleText)
+        {
+            var rect2 = new Rect(ConsoleTextSize.Value.Width * item.Key.x, ConsoleTextSize.Value.Height * item.Key.y, ConsoleTextSize.Value.Width, ConsoleTextSize.Value.Height);
+            context.FillRectangle(item.Value.Background, rect2);
+
+            var formattedText = new FormattedText(item.Value.Text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _typeface, FontSize, item.Value.Foreground);
+            formattedText.SetTextDecorations(item.Value.TextDecorations);
+            formattedText.SetFontWeight(item.Value.FontWeight);
+            formattedText.SetFontStyle(item.Value.FontStyle);
+
+            context.DrawText(formattedText, new Point(ConsoleTextSize.Value.Width * item.Key.x, ConsoleTextSize.Value.Height * item.Key.y));
+        }
+    }
+}
+
+public class TextObject
+{
+    public IBrush Foreground { get; set; }
+
+    public IBrush Background { get; set; }
+
+    public string Text { get; set; }
+
+    public FontWeight FontWeight { get; set; }
+
+    public FontStyle FontStyle { get; set; }
+
+    public TextDecorationCollection? TextDecorations { get; set; }
 }
