@@ -15,8 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="TerminalControl.axaml.cs">
-      <DependentUpon>TerminalControl.axaml</DependentUpon>
+    <Compile Update="TerminalControl.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>%(Filename)</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

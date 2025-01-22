@@ -12,7 +12,7 @@ using Point = Avalonia.Point;
 
 namespace AvaloniaTerminal;
 
-public partial class TerminalControl : UserControl, ITerminalDelegate
+public partial class TerminalControl : Control, ITerminalDelegate
 {
     private Grid _grid;
 
@@ -22,20 +22,7 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
         var dimensions = CalculateVisibleRowsAndColumns();
         var options = new TerminalOptions() { Cols = dimensions.cols, Rows = dimensions.rows };
 
-        _grid = new Grid();
         Focusable = true;
-
-        this.Content = _grid;
-
-        for (int i = 0; i < dimensions.rows; i++)
-        {
-            _grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
-        }
-
-        for (int i = 0; i < dimensions.cols; i++)
-        {
-            _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
-        }
 
         // the terminal itself and services
         Terminal = new Terminal(this, options);
@@ -47,7 +34,7 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
         UpdateDisplay();
 
         KeyUp += TerminalControl_KeyUp;
-        //this.Focus(NavigationMethod.Pointer);
+        this.Focus(NavigationMethod.Pointer);
     }
 
     private void TerminalControl_KeyUp(object? sender, KeyEventArgs e)
@@ -514,22 +501,6 @@ public partial class TerminalControl : UserControl, ITerminalDelegate
     {
         var size = CalculateVisibleRowsAndColumns();
         Terminal.Resize(size.cols, size.rows);
-
-        for (int i = 0; i < size.rows; i++)
-        {
-            if (_grid.RowDefinitions.Count >= i)
-            {
-                _grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) });
-            }
-        }
-
-        for (int i = 0; i < size.cols; i++)
-        {
-            if (_grid.ColumnDefinitions.Count >= i)
-            {
-                _grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Auto) });
-            }
-        }
 
         //SendResize();
     }
