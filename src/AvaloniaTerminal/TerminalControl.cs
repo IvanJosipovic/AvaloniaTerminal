@@ -14,11 +14,10 @@ namespace AvaloniaTerminal;
 
 public partial class TerminalControl : Control, ITerminalDelegate
 {
-    private Grid _grid;
-
     public TerminalControl()
     {
         // get the dimensions of terminal (cols and rows)
+        CalculateTextSize();
         var dimensions = CalculateVisibleRowsAndColumns();
         var options = new TerminalOptions() { Cols = dimensions.cols, Rows = dimensions.rows };
 
@@ -456,10 +455,8 @@ public partial class TerminalControl : Control, ITerminalDelegate
             return (80, 25);
         }
 
-        var fontSize = CalculateTextSize();
-
-        var cols = (int)(Bounds.Width / fontSize.Width);
-        var rows = (int)(Bounds.Height / fontSize.Height);
+        var cols = (int)(Bounds.Width / ConsoleTextSize.Value.Width);
+        var rows = (int)(Bounds.Height / ConsoleTextSize.Value.Height);
 
         return (cols, rows);
     }
@@ -526,6 +523,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
                 ConsoleText[(cell, line)] = text;
             }
         }
+        InvalidateVisual();
     }
 
     void UpdateDisplay()

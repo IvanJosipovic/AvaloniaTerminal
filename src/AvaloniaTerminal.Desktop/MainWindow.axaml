@@ -9,11 +9,10 @@
     d:DesignHeight="200"
     d:DesignWidth="400"
     mc:Ignorable="d">
-    <StackPanel>
+    <Grid>
         <local:TerminalControl
             Name="tc"
-            Height="700"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch" />
-    </StackPanel>
+    </Grid>
 </Window>

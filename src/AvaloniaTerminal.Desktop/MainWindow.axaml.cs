@@ -1,14 +1,10 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
-using CliWrap;
-using k8s.KubeConfigModels;
 using k8s;
-using SkiaSharp;
 using System;
 using System.IO;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using XtermSharp;
 using System.Text.Json;
 
 namespace AvaloniaTerminal;
