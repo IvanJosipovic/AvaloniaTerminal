@@ -9,6 +9,9 @@
     d:DesignHeight="200"
     d:DesignWidth="400"
     mc:Ignorable="d">
+    <Window.Styles>
+        <StyleInclude Source="avares://AvaloniaTerminal/Styles/Colors.axaml" />
+    </Window.Styles>
     <Grid>
         <local:TerminalControl Name="tc" />
     </Grid>

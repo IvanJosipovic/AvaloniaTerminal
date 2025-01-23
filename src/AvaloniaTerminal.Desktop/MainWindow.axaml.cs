@@ -42,7 +42,7 @@ public partial class MainWindow : Window
 
         var client = new Kubernetes(KubernetesClientConfiguration.BuildConfigFromConfigFile());
 
-        _webSocket = client.WebSocketNamespacedPodExecAsync(name, @namespace, command, containerName).GetAwaiter().GetResult();
+        _webSocket = client.WebSocketNamespacedPodExecAsync(name, @namespace, command2, containerName).GetAwaiter().GetResult();
 
         _streamDemuxer = new StreamDemuxer(_webSocket);
         _streamDemuxer.Start();
@@ -103,7 +103,7 @@ public partial class MainWindow : Window
 
     private void Input(byte[] input)
     {
-        _stream?.Write(input, 0, input.Length);
+        _stream?.Write(input);
     }
 }
 
