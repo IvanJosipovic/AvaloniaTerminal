@@ -25,7 +25,7 @@ public partial class MainWindow : Window
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = "powershell.exe",
+                FileName = "pwsh.exe",
                 RedirectStandardOutput = true,
                 RedirectStandardInput = true,
                 CreateNoWindow = true
@@ -59,7 +59,13 @@ public partial class MainWindow : Window
     {
         if (_streamWriter.BaseStream.CanWrite)
         {
-            _streamWriter.Write(Encoding.UTF8.GetString(input));
+            try
+            {
+                _streamWriter.Write(Encoding.UTF8.GetString(input));
+            }
+            catch (IOException)
+            {
+            }
         }
     }
 }
