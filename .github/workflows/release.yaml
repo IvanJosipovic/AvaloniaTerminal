@@ -35,7 +35,7 @@ jobs:
         dry_run: true
         extra_plugins: |
           @semantic-release/changelog
-          conventional-changelog-conventionalcommits
+          @conventional-changelog-conventionalcommits
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
