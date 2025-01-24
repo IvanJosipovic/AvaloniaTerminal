@@ -409,9 +409,6 @@ public partial class TerminalControl : Control, ITerminalDelegate
                 case Key.Tab:
                     Send(EscapeSequences.CmdTab);
                     break;
-                //case Key.Enter:
-                //    Send([EscapeSequences.CmdRet]);
-                //    break;
                 default:
                     if (!string.IsNullOrEmpty(e.KeySymbol))
                     {
