@@ -29,7 +29,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
 
         // trigger an update of the buffers
         FullBufferUpdate();
-        //UpdateDisplay();
+        UpdateDisplay();
 
         KeyUp += TerminalControl_KeyUp;
         this.Focus(NavigationMethod.Pointer);
@@ -181,7 +181,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
                     Send([0x01]);  // Ctrl+A
                     break;
                 case Key.B:
-                    Feed([0x02]);  // Ctrl+B
+                    Send([0x02]);  // Ctrl+B
                     break;
                 case Key.C:
                     Send([0x03]);  // Ctrl+C
@@ -428,8 +428,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
         {
             pendingDisplay = true;
 
-            DispatcherTimer.RunOnce(FullBufferUpdate, TimeSpan.FromMilliseconds(33.34)); // Delay of 33.34 ms
-            //DispatcherTimer.RunOnce(UpdateDisplay, TimeSpan.FromMilliseconds(33.34)); // Delay of 33.34 ms
+            Dispatcher.UIThread.Invoke(UpdateDisplay);
         }
     }
 
@@ -534,19 +533,10 @@ public partial class TerminalControl : Control, ITerminalDelegate
             {
                 var cd = Terminal.Buffer.Lines[line][cell];
 
-                if (ConsoleText.TryGetValue((cell, line), out TextObject text))
-                {
-                    text = SetStyling(text, cd);
+                var text = SetStyling(new TextObject(), cd);
 
-                    text.Text = cd.Code == 0 ? " " : ((char)cd.Rune).ToString();
-                }
-                else
-                {
-                    var text2 = SetStyling(new TextObject(), cd);
-
-                    text2.Text = cd.Code == 0 ? " " : ((char)cd.Rune).ToString();
-                    ConsoleText[(cell, line)] = text2;
-                }
+                text.Text = cd.Code == 0 ? " " : ((char)cd.Rune).ToString();
+                ConsoleText[(cell, line)] = text;
             }
         }
 
@@ -567,7 +557,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
             {
                 var cd = Terminal.Buffer.Lines[line][cell];
 
-                if (ConsoleText.TryGetValue((cell, line), out TextObject text))
+                if (ConsoleText.TryGetValue((cell, line), out TextObject? text) && text != null)
                 {
                     text = SetStyling(text, cd);
 
@@ -592,9 +582,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
 
     public void Feed(string text)
     {
-        SearchService.Invalidate();
-        Terminal.Feed(Encoding.UTF8.GetBytes(text));
-        QueuePendingDisplay();
+        Feed(Encoding.UTF8.GetBytes(text));
     }
 
     public void Feed(byte[] text, int length = -1)
