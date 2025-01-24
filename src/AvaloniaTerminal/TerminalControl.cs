@@ -178,143 +178,143 @@ public partial class TerminalControl : Control, ITerminalDelegate
             switch (e.Key)
             {
                 case Key.A:
-                    Feed(0x01);  // Ctrl+A
+                    Send([0x01]);  // Ctrl+A
                     break;
                 case Key.B:
-                    Feed(0x02);  // Ctrl+B
+                    Feed([0x02]);  // Ctrl+B
                     break;
                 case Key.C:
-                    Feed(0x03);  // Ctrl+C
+                    Send([0x03]);  // Ctrl+C
                     break;
                 case Key.D:
-                    Feed(0x04);  // Ctrl+D
+                    Send([0x04]);  // Ctrl+D
                     break;
                 case Key.E:
-                    Feed(0x05);  // Ctrl+E
+                    Send([0x05]);  // Ctrl+E
                     break;
                 case Key.F:
-                    Feed(0x06);  // Ctrl+F
+                    Send([0x06]);  // Ctrl+F
                     break;
                 case Key.G:
-                    Feed(0x07);  // Ctrl+G
+                    Send([0x07]);  // Ctrl+G
                     break;
                 case Key.H:
-                    Feed(0x08);  // Ctrl+H
+                    Send([0x08]);  // Ctrl+H
                     break;
                 case Key.I:
-                    Feed(0x09);  // Ctrl+I (Tab)
+                    Send([0x09]);  // Ctrl+I (Tab)
                     break;
                 case Key.J:
-                    Feed(0x0A);  // Ctrl+J (Line Feed)
+                    Send([0x0A]);  // Ctrl+J (Line Feed)
                     break;
                 case Key.K:
-                    Feed(0x0B);  // Ctrl+K
+                    Send([0x0B]);  // Ctrl+K
                     break;
                 case Key.L:
-                    Feed(0x0C);  // Ctrl+L
+                    Send([0x0C]);  // Ctrl+L
                     break;
                 case Key.M:
-                    Feed(0x0D);  // Ctrl+M (Carriage Return)
+                    Send([0x0D]);  // Ctrl+M (Carriage Return)
                     break;
                 case Key.N:
-                    Feed(0x0E);  // Ctrl+N
+                    Send([0x0E]);  // Ctrl+N
                     break;
                 case Key.O:
-                    Feed(0x0F);  // Ctrl+O
+                    Send([0x0F]);  // Ctrl+O
                     break;
                 case Key.P:
-                    Feed(0x10);  // Ctrl+P
+                    Send([0x10]);  // Ctrl+P
                     break;
                 case Key.Q:
-                    Feed(0x11);  // Ctrl+Q
+                    Send([0x11]);  // Ctrl+Q
                     break;
                 case Key.R:
-                    Feed(0x12);  // Ctrl+R
+                    Send([0x12]);  // Ctrl+R
                     break;
                 case Key.S:
-                    Feed(0x13);  // Ctrl+S
+                    Send([0x13]);  // Ctrl+S
                     break;
                 case Key.T:
-                    Feed(0x14);  // Ctrl+T
+                    Send([0x14]);  // Ctrl+T
                     break;
                 case Key.U:
-                    Feed(0x15);  // Ctrl+U
+                    Send([0x15]);  // Ctrl+U
                     break;
                 case Key.V:
-                    //_ = dc1.Paste();
-                    Feed(0x16);  // Ctrl+V
+                    //_ = dc1.Paste(]);
+                    Send([0x16]);  // Ctrl+V
                     break;
                 case Key.W:
-                    Feed(0x17);  // Ctrl+W
+                    Send([0x17]);  // Ctrl+W
                     break;
                 case Key.X:
-                    Feed(0x18);  // Ctrl+X
+                    Send([0x18]);  // Ctrl+X
                     break;
                 case Key.Y:
-                    Feed(0x19);  // Ctrl+Y
+                    Send([0x19]);  // Ctrl+Y
                     break;
                 case Key.Z:
-                    Feed(0x1A);  // Ctrl+Z
+                    Send([0x1A]);  // Ctrl+Z
                     break;
                 case Key.D1: // Ctrl+1
-                    Feed(0x31);  // ASCII '1'
+                    Send([0x31]);  // ASCII '1'
                     break;
                 case Key.D2: // Ctrl+2
-                    Feed(0x32);  // ASCII '2'
+                    Send([0x32]);  // ASCII '2'
                     break;
                 case Key.D3: // Ctrl+3
-                    Feed(0x33);  // ASCII '3'
+                    Send([0x33]);  // ASCII '3'
                     break;
                 case Key.D4: // Ctrl+4
-                    Feed(0x34);  // ASCII '4'
+                    Send([0x34]);  // ASCII '4'
                     break;
                 case Key.D5: // Ctrl+5
-                    Feed(0x35);  // ASCII '5'
+                    Send([0x35]);  // ASCII '5'
                     break;
                 case Key.D6: // Ctrl+6
-                    Feed(0x36);  // ASCII '6'
+                    Send([0x36]);  // ASCII '6'
                     break;
                 case Key.D7: // Ctrl+7
-                    Feed(0x37);  // ASCII '7'
+                    Send([0x37]);  // ASCII '7'
                     break;
                 case Key.D8: // Ctrl+8
-                    Feed(0x38);  // ASCII '8'
+                    Send([0x38]);  // ASCII '8'
                     break;
                 case Key.D9: // Ctrl+9
-                    Feed(0x39);  // ASCII '9'
+                    Send([0x39]);  // ASCII '9'
                     break;
                 case Key.D0: // Ctrl+0
-                    Feed(0x30);  // ASCII '0'
+                    Send([0x30]);  // ASCII '0'
                     break;
                 case Key.OemOpenBrackets: // Ctrl+[
-                    Feed(0x1B);
+                    Send([0x1B]);
                     break;
                 case Key.OemBackslash: // Ctrl+\
-                    Feed(0x1C);
+                    Send([0x1C]);
                     break;
                 case Key.OemCloseBrackets: // Ctrl+]
-                    Feed(0x1D);
+                    Send([0x1D]);
                     break;
                 case Key.Space: // Ctrl+Space
-                    Feed(0x00);
+                    Send([0x00]);
                     break;
                 case Key.OemMinus: // Ctrl+_
-                    Feed(0x1F);
+                    Send([0x1F]);
                     break;
                 default:
                     if (!string.IsNullOrEmpty(e.KeySymbol))
                     {
-                        Feed(e.KeySymbol);
+                        Send(e.KeySymbol);
                     }
                     break;
             }
         }
         if (e.KeyModifiers is KeyModifiers.Alt)
         {
-            Feed(0x1B);
+            Send([0x1B]);
             if (!string.IsNullOrEmpty(e.KeySymbol))
             {
-                Feed(e.KeySymbol);
+                Send(e.KeySymbol);
             }
         }
         else
@@ -322,33 +322,33 @@ public partial class TerminalControl : Control, ITerminalDelegate
             switch (e.Key)
             {
                 case Key.Escape:
-                    Feed(0x1b);
+                    Send([0x1b]);
                     break;
                 case Key.Space:
-                    Feed(0x20);
+                    Send([0x20]);
                     break;
                 case Key.Delete:
-                    Feed(EscapeSequences.CmdDelKey);
+                    Send(EscapeSequences.CmdDelKey);
                     break;
                 case Key.Back:
-                    Feed(0x7f);
+                    Send([0x7f]);
                     break;
                 case Key.Up:
-                    Feed(Terminal.ApplicationCursor ? EscapeSequences.MoveUpApp : EscapeSequences.MoveUpNormal);
+                    Send(Terminal.ApplicationCursor ? EscapeSequences.MoveUpApp : EscapeSequences.MoveUpNormal);
                     break;
                 case Key.Down:
-                    Feed(Terminal.ApplicationCursor ? EscapeSequences.MoveDownApp : EscapeSequences.MoveDownNormal);
+                    Send(Terminal.ApplicationCursor ? EscapeSequences.MoveDownApp : EscapeSequences.MoveDownNormal);
                     break;
                 case Key.Left:
-                    Feed(Terminal.ApplicationCursor ? EscapeSequences.MoveLeftApp : EscapeSequences.MoveLeftNormal);
+                    Send(Terminal.ApplicationCursor ? EscapeSequences.MoveLeftApp : EscapeSequences.MoveLeftNormal);
                     break;
                 case Key.Right:
-                    Feed(Terminal.ApplicationCursor ? EscapeSequences.MoveRightApp : EscapeSequences.MoveRightNormal);
+                    Send(Terminal.ApplicationCursor ? EscapeSequences.MoveRightApp : EscapeSequences.MoveRightNormal);
                     break;
                 case Key.PageUp:
                     if (Terminal.ApplicationCursor)
                     {
-                        Feed(EscapeSequences.CmdPageUp);
+                        Send(EscapeSequences.CmdPageUp);
                     }
                     else
                     {
@@ -358,7 +358,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
                 case Key.PageDown:
                     if (Terminal.ApplicationCursor)
                     {
-                        Feed(EscapeSequences.CmdPageDown);
+                        Send(EscapeSequences.CmdPageDown);
                     }
                     else
                     {
@@ -366,56 +366,56 @@ public partial class TerminalControl : Control, ITerminalDelegate
                     }
                     break;
                 case Key.Home:
-                    Feed(Terminal.ApplicationCursor ? EscapeSequences.MoveHomeApp : EscapeSequences.MoveHomeNormal);
+                    Send(Terminal.ApplicationCursor ? EscapeSequences.MoveHomeApp : EscapeSequences.MoveHomeNormal);
                     break;
                 case Key.End:
-                    Feed(Terminal.ApplicationCursor ? EscapeSequences.MoveEndApp : EscapeSequences.MoveEndNormal);
+                    Send(Terminal.ApplicationCursor ? EscapeSequences.MoveEndApp : EscapeSequences.MoveEndNormal);
                     break;
                 case Key.Insert:
                     break;
                 case Key.F1:
-                    Feed(EscapeSequences.CmdF[0]);
+                    Send(EscapeSequences.CmdF[0]);
                     break;
                 case Key.F2:
-                    Feed(EscapeSequences.CmdF[1]);
+                    Send(EscapeSequences.CmdF[1]);
                     break;
                 case Key.F3:
-                    Feed(EscapeSequences.CmdF[2]);
+                    Send(EscapeSequences.CmdF[2]);
                     break;
                 case Key.F4:
-                    Feed(EscapeSequences.CmdF[3]);
+                    Send(EscapeSequences.CmdF[3]);
                     break;
                 case Key.F5:
-                    Feed(EscapeSequences.CmdF[4]);
+                    Send(EscapeSequences.CmdF[4]);
                     break;
                 case Key.F6:
-                    Feed(EscapeSequences.CmdF[5]);
+                    Send(EscapeSequences.CmdF[5]);
                     break;
                 case Key.F7:
-                    Feed(EscapeSequences.CmdF[6]);
+                    Send(EscapeSequences.CmdF[6]);
                     break;
                 case Key.F8:
-                    Feed(EscapeSequences.CmdF[7]);
+                    Send(EscapeSequences.CmdF[7]);
                     break;
                 case Key.F9:
-                    Feed(EscapeSequences.CmdF[8]);
+                    Send(EscapeSequences.CmdF[8]);
                     break;
                 case Key.F10:
-                    Feed(EscapeSequences.CmdF[9]);
+                    Send(EscapeSequences.CmdF[9]);
                     break;
                 case Key.OemBackTab:
-                    Feed(EscapeSequences.CmdBackTab);
+                    Send(EscapeSequences.CmdBackTab);
                     break;
                 case Key.Tab:
-                    Feed(EscapeSequences.CmdTab);
+                    Send(EscapeSequences.CmdTab);
                     break;
                 //case Key.Enter:
-                //    Feed(EscapeSequences.CmdRet);
+                //    Send([EscapeSequences.CmdRet]);
                 //    break;
                 default:
                     if (!string.IsNullOrEmpty(e.KeySymbol))
                     {
-                        Feed(e.KeySymbol);
+                        Send(e.KeySymbol);
                     }
                     break;
             }
@@ -475,6 +475,11 @@ public partial class TerminalControl : Control, ITerminalDelegate
 
     void ITerminalDelegate.SizeChanged(Terminal source)
     {
+    }
+
+    public void Send(string text)
+    {
+        Send(Encoding.UTF8.GetBytes(text));
     }
 
     public void Send(byte[] data)
@@ -588,7 +593,6 @@ public partial class TerminalControl : Control, ITerminalDelegate
         InvalidateVisual();
     }
 
-    // Simple tester API.
     public void Feed(string text)
     {
         SearchService.Invalidate();
@@ -600,13 +604,6 @@ public partial class TerminalControl : Control, ITerminalDelegate
     {
         SearchService.Invalidate();
         Terminal.Feed(text, length);
-        QueuePendingDisplay();
-    }
-
-    public void Feed(byte text)
-    {
-        SearchService.Invalidate();
-        Terminal.Feed([text], -1);
         QueuePendingDisplay();
     }
 

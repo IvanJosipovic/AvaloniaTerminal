@@ -79,7 +79,6 @@ public partial class MainWindow : Window
     /// <param name="rows">Rows</param>
     /// <param name="width">Width</param>
     /// <param name="height">Height</param>
-    /// <exception cref="NotImplementedException"></exception>
     private void TerminalControl_SizeChanged(int cols, int rows, double width, double height)
     {
         var size = new TerminalSize
