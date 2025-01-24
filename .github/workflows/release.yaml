@@ -1,0 +1,64 @@
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+      - 'alpha'
+      - 'beta'
+      - 'dev'
+  pull_request:
+    types: [opened, reopened, synchronize]
+  merge_group:
+
+name: Create Release
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        global-json-file: global.json
+
+    - name: .NET Build
+      run: dotnet build -c Release
+
+    - name: Semantic Release
+      uses: cycjimmy/semantic-release-action@v3
+      id: semantic
+      with:
+        dry_run: true
+        extra_plugins: |
+          @semantic-release/changelog
+          conventional-changelog-conventionalcommits
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: .NET Pack
+      working-directory: src/AvaloniaTerminal
+      run: dotnet pack -c Release -p:Version=${{ (steps.semantic.outputs.new_release_published && steps.semantic.outputs.new_release_version) || '0.0.1' }}
+
+    - name: .NET NuGet Push
+      if: steps.semantic.outputs.new_release_published == 'true'
+      working-directory: src/AvaloniaTerminal/bin/Release
+      run: dotnet nuget push *.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
+
+    - name: Semantic Release
+      if: steps.semantic.outputs.new_release_published == 'true'
+      uses: cycjimmy/semantic-release-action@v3
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        extra_plugins: |
+          @semantic-release/changelog
+          conventional-changelog-conventionalcommits
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: NuGet Package
+        path: src/**/*.nupkg

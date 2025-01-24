@@ -1,0 +1,18 @@
+<Window
+    x:Class="AvaloniaTerminal.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:AvaloniaTerminal"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="AvaloniaTerminal"
+    d:DesignHeight="200"
+    d:DesignWidth="400"
+    mc:Ignorable="d">
+    <Window.Styles>
+        <StyleInclude Source="avares://AvaloniaTerminal/Styles/Colors.axaml" />
+    </Window.Styles>
+    <Grid>
+        <local:TerminalControl Name="tc" />
+    </Grid>
+</Window>
