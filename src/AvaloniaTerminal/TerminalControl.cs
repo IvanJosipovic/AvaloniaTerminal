@@ -7,7 +7,6 @@ using Avalonia.Threading;
 using System.Globalization;
 using System.Text;
 using XtermSharp;
-using Color = Avalonia.Media.Color;
 using Point = Avalonia.Point;
 
 namespace AvaloniaTerminal;
@@ -503,17 +502,18 @@ public partial class TerminalControl : Control, ITerminalDelegate
         SizeChanged?.Invoke(cols, rows, Bounds.Width, Bounds.Height);
     }
 
+    /// <summary>
+    /// Removes Items which are outside bounds Cols/Rows
+    /// </summary>
     private void RemoveItemsDictionary()
     {
-        for (var line = Terminal.Buffer.YBase; line < Terminal.Buffer.YBase + Terminal.Rows; line++)
-        {
-            int i = 0;
+        var itemsToRemove = ConsoleText.Keys
+            .Where(key => key.x >= Terminal.Cols || key.y >= Terminal.Rows)
+            .ToList();
 
-            while (ConsoleText.ContainsKey((Terminal.Cols + i, line)))
-            {
-                ConsoleText.Remove((Terminal.Cols + i, line));
-                i++;
-            }
+        foreach (var item in itemsToRemove)
+        {
+            ConsoleText.Remove(item);
         }
     }
 
@@ -712,7 +712,7 @@ public partial class TerminalControl : Control, ITerminalDelegate
     public override void Render(DrawingContext context)
     {
         var rect = new Rect(0,0, Bounds.Width, Bounds.Height);
-        context.FillRectangle(Brushes.Black, rect);
+        context.FillRectangle(ConvertXtermColor(0), rect);
 
         foreach (var item in ConsoleText)
         {
