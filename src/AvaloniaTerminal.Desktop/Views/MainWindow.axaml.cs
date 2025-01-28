@@ -6,17 +6,22 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Text;
 
-namespace AvaloniaTerminal;
+namespace AvaloniaTerminal.Views;
 
 public partial class MainWindow : Window
 {
     private Process _process;
     private StreamWriter _streamWriter;
 
+    public TerminalControlModel model = new();
+
     public MainWindow()
     {
         InitializeComponent();
         StartProcess();
+
+        tc.Model = model;
+        model.UserInput += Input;
     }
 
     private void StartProcess()
@@ -34,8 +39,6 @@ public partial class MainWindow : Window
 
         _process.Start();
 
-        tc.UserInput = Input;
-
         _streamWriter = _process.StandardInput;
 
         _ = Task.Run(async () =>
@@ -48,7 +51,7 @@ public partial class MainWindow : Window
                 {
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
-                        tc.Feed(buffer, bufferSize);
+                        model.Feed(buffer, bufferSize);
                     });
                 }
             }

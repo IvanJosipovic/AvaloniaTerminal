@@ -1,5 +1,5 @@
 <Window
-    x:Class="AvaloniaTerminal.MainWindow"
+    x:Class="AvaloniaTerminal.Views.MainWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -12,7 +12,10 @@
     <Window.Styles>
         <StyleInclude Source="avares://AvaloniaTerminal/Styles/Colors.axaml" />
     </Window.Styles>
-    <Grid>
-        <local:TerminalControl Name="tc" />
+    <Grid ColumnDefinitions="*" RowDefinitions="*">
+        <local:TerminalControl
+            Name="tc"
+            Grid.Row="0"
+            Grid.Column="0" />
     </Grid>
 </Window>
