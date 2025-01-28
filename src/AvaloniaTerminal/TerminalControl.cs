@@ -3,9 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Threading;
 using System.Globalization;
-using System.Text;
 using XtermSharp;
 using Point = Avalonia.Point;
 
@@ -16,7 +14,6 @@ public partial class TerminalControl : Control
     private Size _consoleTextSize;
 
     private Typeface _typeface;
-
 
     public TerminalControl()
     {
@@ -33,13 +30,8 @@ public partial class TerminalControl : Control
     {
         get => GetValue(TerminalProperty);
         set { SetValue(TerminalProperty, value);
-            Model.ConsoleText.CollectionChanged += ConsoleText_CollectionChanged;
+            Model.UpdateUI = InvalidateVisual;
         }
-    }
-
-    private void ConsoleText_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    {
-        InvalidateVisual();
     }
 
     public static readonly StyledProperty<string> FontNameProperty = AvaloniaProperty.Register<TerminalControl, string>(nameof(FontName), "Cascadia Mono");
@@ -378,4 +370,3 @@ public partial class TerminalControl : Control
         }
     }
 }
-

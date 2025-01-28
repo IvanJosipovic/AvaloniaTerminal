@@ -33,7 +33,7 @@ public partial class TerminalControlModel : ObservableObject, ITerminalDelegate
     public partial string Title { get; set; }
 
     [ObservableProperty]
-    public partial AvaloniaDictionary<(int x, int y), TextObject> ConsoleText { get; set; } = new();
+    public partial Dictionary<(int x, int y), TextObject> ConsoleText { get; set; } = new();
 
     /// <summary>
     /// Gets or sets a value indicating whether this <see cref="T:AvaloniaTerminal.TerminalControl"/> treats the "Alt/Option" key on the mac keyboard as a meta key,
@@ -102,13 +102,9 @@ public partial class TerminalControlModel : ObservableObject, ITerminalDelegate
     /// <summary>
     /// Invoked to raise input on the control, which should probably be sent to the actual child process or remote connection
     /// </summary>
-    public Action<byte[]> UserInput;
+    public event Action<byte[]> UserInput;
 
-    // The code below is intended to not repaint too often, which can produce flicker, for example
-    // when the user refreshes the display, and this repaints the screen, as dispatch delivers data
-    // in blocks of 1024 bytes, which is not enough to cover the whole screen, so this delays
-    // the update for a 1/600th of a second.
-    bool pendingDisplay;
+    public Action UpdateUI;
 
     public void ShowCursor(Terminal source)
     {
@@ -195,8 +191,6 @@ public partial class TerminalControlModel : ObservableObject, ITerminalDelegate
                 ConsoleText[(cell, line)] = text;
             }
         }
-
-        pendingDisplay = false;
     }
 
     public void UpdateDisplay()
@@ -216,22 +210,20 @@ public partial class TerminalControlModel : ObservableObject, ITerminalDelegate
                     text = SetStyling(text, cd);
 
                     text.Text = cd.Code == 0 ? " " : ((char)cd.Rune).ToString();
-                    ConsoleText[(cell, line)] = text;
                 }
                 else
                 {
                     var text2 = SetStyling(new TextObject(), cd);
 
                     text2.Text = cd.Code == 0 ? " " : ((char)cd.Rune).ToString();
-                    ConsoleText[(cell, line)] = text2;
+                    ConsoleText[(cell, line - tb.YDisp)] = text2;
                 }
             }
         }
 
         //UpdateCursorPosition();
         //UpdateScroller();
-
-        pendingDisplay = false;
+        UpdateUI?.Invoke();
     }
 
     public void Feed(string text)
